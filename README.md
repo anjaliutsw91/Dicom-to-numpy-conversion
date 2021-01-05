@@ -1,3 +1,4 @@
+<span style="font-family: 'Lucida Console';">foo</span>
 # Dicom-to-numpy-conversion
 Dicom to numpy conversion
 
