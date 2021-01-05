@@ -5,7 +5,7 @@ Dicom to numpy conversion
 
 ## Running
 
-dicom2numpy.py --data_dirn ./dicom --numpy_dst_dir ./numpys
+dicom2numpy.py --data_dir ./dicom --numpy_dst_dir ./numpys
 
 •	numpy_dst_dir : The destination for the numpy files
 
