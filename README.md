@@ -1,4 +1,4 @@
-<span style="font-family: 'HelveticaNeueBlack';">
+
 # Dicom-to-numpy-conversion
 Dicom to numpy conversion
 
@@ -15,12 +15,12 @@ dicom2numpy.py --data_dirn ./dicom --numpy_dst_dir ./numpys
 
 ## dicom2numpy.py
 
-## Required: 
+Required: 
 •	"pat_list": The list of patients. This should be the folder name for each patient. Could be MRNs.
 
 •	"alias_list": This is the name you would like to give each patient for the numpy file. This will be the patient identifier. If the names in the patient list suffice, copy the same for alias_list. For eg, MRN 12345 could be 1, the next MRN could be 2. However you would like to name it.
 
-## Optional:
+Optional:
 
 •	"roi_list": The list of roi name( for each roi)
 Each institution has different naming conventions for Rectum, Bladder and CTV. Please check to make sure correct structures are selected. If not predetermined it can be searched using keywords. The current keywords used in the code can be seen from lines 227-234. Edit these keywords to your convenience.
