@@ -1,6 +1,0 @@
-{
-    "numpy_dst_dir" : "numpy",
-    "data_dir" : "dicom",
-    "pat_list" : [12345],
-    "alias_list" : [1]
-}
