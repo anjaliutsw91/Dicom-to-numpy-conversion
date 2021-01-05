@@ -2,13 +2,17 @@
 Dicom to numpy conversion
 
 config_dicomtonumpy: File locations, patient list, alias list
-•	"numpy_dst_dir" : The destination for the numpy files
-•	"data_dir": Location of dicom files. For each patient, files have to be arranged into CT and RT. 
-•	"pat_list": The list of patients. This should be the folder name for each patient. Could be MRNs.
-•	"alias_list": This is the name you would like to give each patient for the numpy file. This will be the patient identifier. If the names in the patient list suffice, copy the same for alias_list. For eg, MRN 12345 could be 1, the next MRN could be 2. However you would like to name it.
 
+"numpy_dst_dir" : The destination for the numpy files
 
- 
+"data_dir": Location of dicom files. For each patient, files have to be arranged into CT and RT. 
+
+"pat_list": The list of patients. This should be the folder name for each patient. Could be MRNs.
+
+"alias_list": This is the name you would like to give each patient for the numpy file. This will be the patient identifier. If the names in the patient list suffice, copy the same for alias_list. For eg, MRN 12345 could be 1, the next MRN could be 2. However you would like to name it.
+
+<img src="directoryformat.png" align="right" />
+
 dicom2numpy.py
 After editing the config file, the dicom2numpy.py can be run. 
 
