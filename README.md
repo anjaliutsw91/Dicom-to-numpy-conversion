@@ -1,4 +1,4 @@
-<span style="font-family: 'Lucida Console';">foo</span>
+<span style="font-family: 'Lucida Console';">
 # Dicom-to-numpy-conversion
 Dicom to numpy conversion
 
@@ -30,6 +30,6 @@ If you would prefer a different way of saving, it can be changed within the code
 ## Citing
 If you find this repository useful, please consider citing it using a link to the repo :)
  
-
+</span>
 
 
