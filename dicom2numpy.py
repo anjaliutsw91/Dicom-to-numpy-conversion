@@ -9,9 +9,9 @@ import cv2
 import glob
 import os
 import time
-import json
 import math
 import pydicom as dicom
+import argparse
 
 def get_dir(data_dir, S):
     file_dirs = list()
@@ -155,7 +155,7 @@ def extract_ct(ct_dcm_path_list, dst_path, patient_ID_CT):
     # print('{}/{} slices have been processed!'.format(slice_num, slice_num))
     ct_all_slices = np.transpose(ct_all_slices, (1, 2, 0))
     # save ct slice
-    np.save(os.path.join(dst_path, 'CT_{}_0.npy'.format(patient_ID_CT)), ct_all_slices)
+    np.save(os.path.join(dst_path, 'CT_{}.npy'.format(patient_ID_CT)), ct_all_slices)
     order = [float(order_slice[key]) for key in sorted(order_slice)]
     offset = {'start': offset_start, 'end': offset_end}
 
@@ -236,7 +236,7 @@ def extract_contours(rt_struct_path, dst_path, patient_id_RT, ctv_, bladder_, re
                 rectum_.append(roi_list[idx])
 
     current_mask_volume = create_structures(rt_struct_rois,ctv_list,contours_sequence, slice_num, filled=True)
-    np.save(os.path.join(dst_path, 'ROI_{}_0_7.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool))   ## However you want to save it
+    np.save(os.path.join(dst_path, 'ROI_{}_7.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool))   ## However you want to save it
     print('{}....... saved!'.format(ctv_list))
 
     if(len(bladder_list)== 0):
@@ -245,7 +245,7 @@ def extract_contours(rt_struct_path, dst_path, patient_id_RT, ctv_, bladder_, re
        print("Found muliple Bladder structures, find the right structure from :", bladder_list, " Line 231")
     else:
         current_mask_volume = create_structures(rt_struct_rois, bladder_list[0], contours_sequence, slice_num, filled=True)
-        np.save(os.path.join(dst_path, 'ROI_{}_0_5.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool)) ## However you want to save it
+        np.save(os.path.join(dst_path, 'ROI_{}_5.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool)) ## However you want to save it
         print('{}....... saved!'.format(bladder_list[0]))
 
     if(len(rectum_list)== 0):
@@ -255,18 +255,20 @@ def extract_contours(rt_struct_path, dst_path, patient_id_RT, ctv_, bladder_, re
     else:
        current_mask_volume = create_structures(rt_struct_rois, rectum_list[0], contours_sequence, slice_num,
                                                filled=True)
-       np.save(os.path.join(dst_path, 'ROI_{}_0_4.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool)) ## However you want to save it
+       np.save(os.path.join(dst_path, 'ROI_{}_4.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool)) ## However you want to save it
        print('{}....... saved!'.format(rectum_list[0]))
 
-
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_dir', dest='data_dir', type=str,default='./dicom', help='dicom folder')
+    parser.add_argument('--numpy_dst_dir', dest='numpy_dst_dir', type=str,default='./numpys', help='numpy destination folder')
+    return parser.parse_known_args()
 ##################### dicom 2 numpy ##########################
 
 if __name__ == '__main__':
-    with open('config_dicomtonumpy.json', 'r') as f:
-        cfg = json.load(f)
-    numpy_dst_dir = cfg['numpy_dst_dir']
-    data_dir = cfg['data_dir']
-
+    args, _ = parse_args()
+    data_dir = args.data_dir
+    numpy_dst_dir = args.numpy_dst_dir
 
     ########## If you already know the contour names for each structure to be extracted use this section of the code to create a list.
     ########## I have created an excel sheet with all names and is reading from there.
