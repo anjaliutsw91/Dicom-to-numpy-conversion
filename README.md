@@ -1,4 +1,4 @@
-<span style="font-family: 'Proxima Nova';">
+<span style="font-family: 'HelveticaNeueBlack';">
 # Dicom-to-numpy-conversion
 Dicom to numpy conversion
 
