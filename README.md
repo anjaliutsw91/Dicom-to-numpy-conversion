@@ -11,7 +11,7 @@ config_dicomtonumpy: File locations, patient list, alias list
 
 "alias_list": This is the name you would like to give each patient for the numpy file. This will be the patient identifier. If the names in the patient list suffice, copy the same for alias_list. For eg, MRN 12345 could be 1, the next MRN could be 2. However you would like to name it.
 
-<img src="directoryformat.png" align="right" />
+<img src="directoryformat.png" align="center" />
 
 dicom2numpy.py
 After editing the config file, the dicom2numpy.py can be run. 
