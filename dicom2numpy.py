@@ -189,32 +189,28 @@ def create_structures(rt_struct_rois,roi,contours_sequence, slice_num, filled=Tr
     current_mask_volume = np.transpose(current_mask_volume, (1, 2, 0))
     return current_mask_volume
 
-def extract_contours(rt_struct_path, dst_path, patient_id_RT, ctv_, bladder_, rectum_, order):
+def extract_contours(rt_struct_path, dst_path, patient_id_RT, order, search_using_key=False, org_list= [], org_alias_list=[]):
     ######################################
     # parameter:
     # 	rt_struct_path: RT .dcm files
     #	dst_path: dst path to save the .npy files
-    # 	offset: [offset_start_slice, offset_last_slice]
-    #	spacing: [float, float], spacing in x and y axis
     #	order: list, use order to match each slice in a pair of CT and mask
-    #	ori_size: [int, int] generally [512*512], in some cases, the size of ROI will be [272*272]
-    #	roi_lists ( ctv_, bladder_, rectum_) : list, the list of original ROIs that need to save as numpy arrays, e.g. ['Bladder', 'CTV']
+    #	org_list  : list of original ROIs that need to save as numpy arrays, e.g. ['Bladder', 'CTV']
+    #	org_alias_list  : list of aliases for each ROI mentioned in the org_list
     #
     # return:
     #	None
     ######################################
-    # print('********************************************* Extracting ROI masks for Patient {} ****************************************************'.format(patient_id_RT))
+    print('********************************************* Extracting ROI masks for Patient {} ****************************************************'.format(patient_id_RT))
     start_time = time.time()
 
     # extract contours and save as *.png
     rt_struct_data = dicom.read_file(rt_struct_path)
     rt_struct_rois = [rt_struct_data.StructureSetROISequence[ii].ROIName for ii in
                       range(len(rt_struct_data.StructureSetROISequence))]
-    # print(rt_struct_rois)
 
     slice_num = len(order)
 
-    contours_sequence = []
     if rt_struct_data.dir('contour')[0]:
         contours_sequence = rt_struct_data.ROIContourSequence
     else:
@@ -222,46 +218,54 @@ def extract_contours(rt_struct_path, dst_path, patient_id_RT, ctv_, bladder_, re
         return
 
     roi_list = rt_struct_rois
+    # print(roi_list)
 
     #### Finding Structures using keywords
-    for idx in range(len(roi_list)):
-        if not bladder_:
+
+    if search_using_key:
+        bladder_list = []
+        rectum_list = []
+        ctv_list = []
+        for idx in range(len(roi_list)):
             if (roi_list[idx].lower() == 'bladder') or (roi_list[idx].lower() == 'bladderfull'):
-                bladder_.append(roi_list[idx])
-        if not bladder_:
+                bladder_list.append(roi_list[idx])
             if (roi_list[idx].lower() == 'rectum'):
-                rectum_.append(roi_list[idx])
-        if not ctv_:
-            if (roi_list[idx].lower() == 'CTV'):
-                rectum_.append(roi_list[idx])
+                rectum_list.append(roi_list[idx])
+            if (roi_list[idx].lower().find('ctv')) >= 0:
+                ctv_list.append(roi_list[idx])
+        if (len(bladder_list) == 0):
+            print("Cannot find any Bladder structure")
+        elif (len(bladder_list) > 1):
+            print("Found muliple Bladder structures, find the right structure from :", bladder_list , " or use a more unique keyword")
+        else:
+            org_list.append(bladder_list[0])
+            org_alias_list.append(5)
+        if (len(rectum_list) == 0):
+            print("Cannot find any Rectum structure")
+        elif (len(rectum_list) > 1):
+            print("Found muliple Rectum structures, find the right structure from :", rectum_list , " or use a more unique keyword")
+        else:
+            org_list.append(rectum_list[0])
+            org_alias_list.append(4)
+        if (len(ctv_list) == 0):
+            print("Cannot find any CTV structure")
+        elif (len(ctv_list) > 1):
+            print("Found muliple CTV structures, find the right structure from :", ctv_list , " or use a more unique keyword")
+        else:
+            org_list.append(ctv_list[0])
+            org_alias_list.append(7)
+    print(len(org_list))
+    for org in range(len(org_list)):
+        current_mask_volume = create_structures(rt_struct_rois,org_list[org],contours_sequence, slice_num, filled=True)
+        np.save(os.path.join(dst_path, 'ROI_{}_{}.npy'.format(patient_id_RT, org_alias_list[org])), current_mask_volume.astype(np.bool))   ## However you want to save it
+        print('{}....... saved!'.format(org_list[org]))
 
-    current_mask_volume = create_structures(rt_struct_rois,ctv_list,contours_sequence, slice_num, filled=True)
-    np.save(os.path.join(dst_path, 'ROI_{}_7.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool))   ## However you want to save it
-    print('{}....... saved!'.format(ctv_list))
-
-    if(len(bladder_list)== 0):
-       print("Cannot find any Bladder structure")
-    elif(len(bladder_list) > 1):
-       print("Found muliple Bladder structures, find the right structure from :", bladder_list, " Line 231")
-    else:
-        current_mask_volume = create_structures(rt_struct_rois, bladder_list[0], contours_sequence, slice_num, filled=True)
-        np.save(os.path.join(dst_path, 'ROI_{}_5.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool)) ## However you want to save it
-        print('{}....... saved!'.format(bladder_list[0]))
-
-    if(len(rectum_list)== 0):
-       print("Cannot find any Rectum structure")
-    elif(len(rectum_list) > 1):
-       print("Found muliple Rectum structures, find the right structure from :", rectum_list, " Line 233")
-    else:
-       current_mask_volume = create_structures(rt_struct_rois, rectum_list[0], contours_sequence, slice_num,
-                                               filled=True)
-       np.save(os.path.join(dst_path, 'ROI_{}_4.npy'.format(patient_id_RT)), current_mask_volume.astype(np.bool)) ## However you want to save it
-       print('{}....... saved!'.format(rectum_list[0]))
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', dest='data_dir', type=str,default='./dicom', help='dicom folder')
     parser.add_argument('--numpy_dst_dir', dest='numpy_dst_dir', type=str,default='./numpys', help='numpy destination folder')
+    parser.add_argument('--search_using_key', dest='search_using_key', type=bool,default=False, help='True/False')
     return parser.parse_known_args()
 ##################### dicom 2 numpy ##########################
 
@@ -269,6 +273,7 @@ if __name__ == '__main__':
     args, _ = parse_args()
     data_dir = args.data_dir
     numpy_dst_dir = args.numpy_dst_dir
+    search_using_key = args.search_using_key
 
     ########## If you already know the contour names for each structure to be extracted use this section of the code to create a list.
     ########## I have created an excel sheet with all names and is reading from there.
@@ -276,30 +281,36 @@ if __name__ == '__main__':
 
     from xlrd import open_workbook
 
-    wb = open_workbook('pat_list.xlsx')
+    wb = open_workbook('Pat_list_pelvis.xlsx')
     pat_list = []
     alias_list = []
-    ctv_list = []
-    bladder_list = []
-    rectum_list = []
+    org_list = []
+    org_alias_list = []
     for s in wb.sheets():
-        if s.name == 'contournames':
+        if s.name == 'contournames': #[Has patient id, alias, organlist, organaliaslist  in that order]
             num_cols = s.ncols  # Number of columns
             for row_idx in range(0, s.nrows):  # Iterate through rows
-                pat_list.append(str.zfill(str(int(s.cell(row_idx, 0).value)),10))
+                pat_list.append(str(int(s.cell(row_idx, 0).value)))
                 alias_list.append(str(int(s.cell(row_idx, 1).value)))
-                ctv_list.append(str(s.cell(row_idx, 2).value))
-                bladder_list.append(str(s.cell(row_idx, 3).value))
-                rectum_list.append(str(s.cell(row_idx, 4).value))
+                if not search_using_key:
+                    org_list.append(str(s.cell(row_idx, 2).value))
+                    org_alias_list.append(str(s.cell(row_idx, 3).value))
 
 
     import shutil
     for p in range(len(pat_list)):
         print("***************************************** DICOM TO NUMPY CONVERSION FOR PATIENT {} ***********************************************".format(pat_list[p]))
-        print(alias_list[p])
+        orgs = []
+        orgs_alias = []
+        if not search_using_key:
+            for i in org_list[p].split(','):
+                orgs.append(i.strip(" "))
+            for i in org_alias_list[p].split(','):
+                orgs_alias.append(i.strip(" "))
+
+        dicom_dir = os.path.join(data_dir,pat_list[p])
         CT_file_dirs = get_dir(dicom_dir, 'CT')
         RT_file_dirs = get_dir(dicom_dir, 'RT')
-
         for CT_file_path in CT_file_dirs:
             RT_file_path = RT_file_dirs[CT_file_dirs.index(CT_file_path)]
 
@@ -318,5 +329,5 @@ if __name__ == '__main__':
             # mask dicom to numpy
             rt_path = study_RT[study_id]['RT'][0]
             rt_data = dicom.read_file(rt_path)
-            extract_contours(rt_path, numpy_dst_dir,alias_list[p], ctv_list[p], bladder_list[p], rectum_list[p], order)
+            extract_contours(rt_path, numpy_dst_dir,alias_list[p], order, search_using_key, orgs, orgs_alias)
 
