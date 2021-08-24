@@ -1,5 +1,6 @@
 
 # Dicom-to-numpy-conversion
+Code for converting dicom to numpy format( or any other format for that matter).
 Dicom to numpy conversion
 
 
